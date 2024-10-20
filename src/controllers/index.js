@@ -1,3 +1,4 @@
 module.exports = {
-  pingController:require('./pingController')
+  pingController:require('./pingController'),
+  bookingController:require('./booking-controller'),
 }
