@@ -8,6 +8,7 @@ const {ENUMS} = require('../utils/common');
 const {BOOKED,CANCELLED} = ENUMS.BOOKING_STATUS;
 
 const bookingRepository = new BookingRepository();
+
 async function createBooking(data) {
   const transaction = await db.sequelize.transaction();
   try {
@@ -34,16 +35,13 @@ async function makePayment(data) {
   const transaction = await db.sequelize.transaction();
   try {
     const booking = await bookingRepository.get(data.bookingId,transaction);
-    // if(booking.status == CANCELLED){
-    //   throw new AppError(`Booking has expired`,StatusCodes.BAD_REQUEST);
-    // }
+    if(booking.status == CANCELLED){
+      throw new AppError(`Booking has expired`,StatusCodes.BAD_REQUEST);
+    }
     const bookingTime = new Date(booking.createdAt);
     const currentTime = new Date();
-    console.log(currentTime - bookingTime)
     if(currentTime - bookingTime >300000){
-      await db.sequelize.transaction(async (cancelTransaction) => {
-        await bookingRepository.update(booking.id, { status: CANCELLED }, cancelTransaction);
-      });
+      await cancelBooking(booking.id)
       throw new AppError(`Booking has expired`, StatusCodes.BAD_REQUEST)
     }
     if(booking.userId != data.userId){
@@ -55,12 +53,33 @@ async function makePayment(data) {
     await transaction.commit();
     return true;
   } catch (error) {
-    //console.log(error)
+    console.log(error)
     await transaction.rollback();
     if(error instanceof AppError){
       throw error;
     }
     throw new AppError(`Something went wrong while making payment`,StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
+
+async function cancelBooking(bookingId) {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const booking = await bookingRepository.get(bookingId,transaction);
+    if(booking.status == CANCELLED){
+      await transaction.commit();
+      return true;
+    }
+    await axios.patch(`${serverConfig.FLIGHT_SERVICE}/api/v1/flights/${booking.flightId}/seats`,{
+      seats:booking.noOfSeats,
+      dec:0
+    })
+    await bookingRepository.update(bookingId,{status:CANCELLED},transaction);
+    await transaction.commit();
+  } catch (error) {
+    console.log(error)
+    await transaction.rollback();
+    throw new AppError(`Something went wrong while CANCELLING the booking`,StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
