@@ -1,6 +1,6 @@
 const success = {
   success:true,
-  message:`The request was successfully handles`,
+  message:`The request was successfully handled`,
   data:{},
   error:{}
 }

@@ -1,3 +1,3 @@
 module.exports = {
-  bookingService:require('./booking-service')
+  BookingService:require('./booking-service')
 }
