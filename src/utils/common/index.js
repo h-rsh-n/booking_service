@@ -1,5 +1,5 @@
 module.exports = {
   successMessage:require('./success'),
   errorMessage:require('./error'),
-  ENUMS:require('./enum')
+  ENUMS:require('./enum'),
 }
