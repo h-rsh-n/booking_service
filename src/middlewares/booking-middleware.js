@@ -3,7 +3,7 @@ const { AppError } = require('../utils/errors/app-error');
 const { errorMessage } = require('../utils/common');
 
 function validateBookingCreate(req,res,next){
-  const validateFileds = ['userId','flightId','noOfSeats'];
+  const validateFileds = ['flightId','noOfSeats'];
   const missingFileds = [];
 
   validateFileds.forEach((field)=>{
@@ -21,7 +21,7 @@ function validateBookingCreate(req,res,next){
 }
 
 function validateMakePayment(req,res,next){
-  const validate = ['userId','bookingId','cost'];
+  const validate = ['bookingId','cost'];
   const missingFields = []
 
   validate.forEach((field)=>{

@@ -5,10 +5,10 @@ const inMemoryDB = {}
 
 async function createBooking(req,res){
   try {
-    console.log(req)
     const booking = await BookingService.createBooking({
       flightId:req.body.flightId,
-      userId:req.body.userId,
+      userId:req.headers['x-user-id'],
+      email:req.headers['x-user-gmail'],
       noOfSeats:req.body.noOfSeats
     })
     //console.log(booking)
@@ -28,12 +28,13 @@ async function makePayment(req,res) {
       errorMessage.error = `Missing idempotency key`
       return res.status(StatusCodes.BAD_REQUEST).json(errorMessage);
     }
-    if(inMemoryDB[idempotencyKey] = idempotencyKey){
+    if(inMemoryDB[idempotencyKey] = idempotencyKey && inMemoryDB[idempotencyKey]!=undefined){
       errorMessage.error = `Cannot retry on a successful payment`
       return res.status(StatusCodes.BAD_REQUEST).json(errorMessage)
     }
     const payment = await BookingService.makePayment({
-      userId:req.body.userId,
+      userId:req.headers['x-user-id'],
+      email:req.headers['x-user-gmail'],
       bookingId:req.body.bookingId,
       cost:req.body.cost
     })

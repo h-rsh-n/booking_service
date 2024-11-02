@@ -5,6 +5,7 @@ const db = require('../models')
 const {serverConfig} = require('../config');
 const { BookingRepository } = require("../repositories/booking-repository");
 const {ENUMS} = require('../utils/common');
+const {Queue} = require('../utils/common')
 const {BOOKED,CANCELLED} = ENUMS.BOOKING_STATUS;
 
 const bookingRepository = new BookingRepository();
@@ -51,6 +52,15 @@ async function makePayment(data) {
     }
     await bookingRepository.update(booking.id,{status:BOOKED},transaction)
     await transaction.commit();
+    Queue.sendData({
+      bookingId:booking.id,
+      userId:booking.userId,
+      email:data.email,
+      cost:booking.totalCost,
+      totalSeats:booking.noOfSeats,
+      status:'BOOKED',
+      flightId:booking.flightId
+    })
     return true;
   } catch (error) {
     console.log(error)
